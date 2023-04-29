@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-28 12:53:16
- * @LastEditTime: 2023-04-28 15:43:15
+ * @LastEditTime: 2023-04-29 22:42:34
  * @LastEditors: Libra
  * @Description: room class
  */
@@ -61,10 +61,6 @@ class Room extends EventEmitter {
   socketDisconnecting(socket, reason) {
     // delete socket from sockets array
     this._sockets = this._sockets.filter((s) => s.id !== socket.id);
-    // close all transports
-    this._AppData.get(socket.id).transports.forEach((transport) => {
-      transport.close();
-    });
     // delete socket data from AppData
     this._AppData.delete(socket.id);
     console.info(
