@@ -1,7 +1,7 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-29 21:25:56
- * @LastEditTime: 2023-04-29 22:52:42
+ * @LastEditTime: 2023-04-30 10:39:16
  * @LastEditors: Libra
  * @Description: 
 -->
@@ -15,39 +15,67 @@ kkk
 import { onMounted } from 'vue';
 import RoomClient from '../lib/room'
 
-let client;
 onMounted(async()=>{
-  client = new RoomClient('123', 'libra1', false, true, false, false, false)
+  const client = new RoomClient({
+    roomId: '123',
+    userName: 'libra1',
+    producer: false,
+    consumer: true,
+  })
   await client.joinRoom('https://localhost:5000', '/libra')
   console.log(client);
   // const emitter = client
-  client.on('consumers', (consumers) => {
-    console.log(consumers);
+  client.on('consumer', (consumer) => {
+    console.log(consumer);
     // handle video
-    handleVideo(consumers)
+    handleVideo(consumer)
   })
 })
 
-function handleVideo(consumers) {
+function handleVideo(consumer) {
   const videoContainer = document.querySelector('.video-container')
-  var child = videoContainer.lastElementChild;
-  while (child) {
-    videoContainer.removeChild(child);
-    child = videoContainer.lastElementChild;
-  }
-  for (const consumer of Array.from(consumers.values())) {
-    console.log(consumer)
-    const videoTrack = consumer.track;
-    console.log('videoTrack', videoTrack);
-    const stream = new MediaStream();
-    stream.addTrack(videoTrack);
-    const video = document.createElement('video');
-    video.id=`video${consumer.appData.roomId}`
-    videoContainer.appendChild(video)
-    video.autoplay = true
-    video.muted = true
-    video.srcObject = stream;
-  }
+    console.log('consumer data', consumer.appData)
+    let suffix = '_c'
+    if (consumer.appData.share) {
+      suffix = '_s'
+    }
+    if (consumer.appData.audio) {
+      console.log('dddd')
+      suffix = '_a'
+      const audioEl = document.querySelector(`#audio${consumer.appData.userId}${suffix}`)
+      if (audioEl) {
+        const stream = new MediaStream([consumer.track])
+        audioEl.srcObject = stream
+      } else {
+        const stream = new MediaStream([consumer.track])
+        const audio = document.createElement('audio')
+        audio.id = `audio${consumer.appData.userId}${suffix}`
+        audio.controls = true
+        audio.autoplay = true
+        audio.srcObject = stream
+        videoContainer.appendChild(audio)
+      }
+      return
+    }
+    const videoEle = document.querySelector(`#video${consumer.appData.userId}${suffix}`)
+    if (videoEle) {
+      const videoTrack = consumer.track;
+      const stream = new MediaStream()
+      stream.addTrack(videoTrack);
+      videoEle.srcObject = stream;
+    } else {
+      const videoTrack = consumer.track;
+      const stream = new MediaStream();
+      stream.addTrack(videoTrack);
+      const video = document.createElement('video');
+      video.width = 640
+      video.height = 480
+      video.id=`video${consumer.appData.userId}${suffix}`
+      videoContainer.appendChild(video)
+      video.autoplay = true
+      video.muted = true
+      video.srcObject = stream;
+    }
 }
 
 </script>

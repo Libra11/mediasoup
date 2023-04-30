@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-28 12:53:16
- * @LastEditTime: 2023-04-29 22:42:34
+ * @LastEditTime: 2023-04-30 09:58:01
  * @LastEditors: Libra
  * @Description: room class
  */
@@ -250,6 +250,10 @@ class Room extends EventEmitter {
     const transport = Array.from(transports.values()).find(
       (t) => t.appData.consumer
     );
+    if (!transport) {
+      console.error("transport for consumer not found");
+      return;
+    }
     let consumer;
     try {
       consumer = await transport.consume({

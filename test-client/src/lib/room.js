@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-29 19:15:12
- * @LastEditTime: 2023-04-29 23:04:55
+ * @LastEditTime: 2023-04-30 10:38:10
  * @LastEditors: Libra
  * @Description: room client
  */
@@ -11,10 +11,19 @@ import * as mediaSoupClient from 'mediasoup-client'
 import { socketPromise } from './util'
 
 export default class Room extends EventEmitter {
-  constructor(roomId, userName, producer, consumer, video, audio, screen) {
+  constructor({
+    roomId,
+    userName,
+    producer,
+    consumer,
+    video = false,
+    audio = false,
+    screen = false
+  }) {
     super()
     this._roomId = roomId
     this._userName = userName
+    this._userId = this._roomId + '-' + this._userName
     this._socket = null
     this._device = null
     this._video = video
@@ -24,7 +33,9 @@ export default class Room extends EventEmitter {
     this._consumer = consumer
     this._consumers = new Map()
     this._mediasoupDevice = null
-    this._sendTransport = null
+    this._sendVideoTransport = null
+    this._sendScreenTransport = null
+    this._sendAudioTransport = null
     this._recvTransport = null
     this._audioProducer = null
     this._videoProducer = null
@@ -34,21 +45,6 @@ export default class Room extends EventEmitter {
   close(reason) {
     if (this._socket && this._socket.connected) {
       this._socket.close()
-    }
-    if (this._audioProducer) {
-      this._audioProducer.close()
-    }
-    if (this._videoProducer) {
-      this._videoProducer.close()
-    }
-    if (this._screenProducer) {
-      this._screenProducer.close()
-    }
-    if (this._sendTransport) {
-      this._sendTransport.close()
-    }
-    if (this._recvTransport) {
-      this._recvTransport.close()
     }
     this.emit('close', reason)
   }
@@ -64,9 +60,7 @@ export default class Room extends EventEmitter {
     socket.on('connect', async () => {
       await this.initRoom(socket)
       await this.produce(this._video, this._audio, this._screen)
-      if (this._consumer) {
-        await this.join()
-      }
+      await this.join()
     })
     socket.on('disconnect', (reason) => {
       console.log('socket disconnect:', reason)
@@ -130,7 +124,7 @@ export default class Room extends EventEmitter {
         consumer.on('transportclose', () => {
           this._consumers.delete(consumer.id)
         })
-        this.emit('consumers', this._consumers)
+        this.emit('consumer', consumer)
         callback()
       } catch (error) {
         console.error(error)
@@ -149,7 +143,9 @@ export default class Room extends EventEmitter {
         producer: this._producer,
         consumer: this._consumer
       })
-      this.initSendTransport(socket, transportParams)
+      this._sendVideoTransport = await this.initSendTransport(socket)
+      this._sendScreenTransport = await this.initSendTransport(socket)
+      this._sendAudioTransport = await this.initSendTransport(socket)
       this.initRecvTransport(socket, transportParams)
     } catch (error) {
       console.error('initRoom error: ', error)
@@ -157,12 +153,16 @@ export default class Room extends EventEmitter {
     }
   }
 
-  initSendTransport(socket, transportParams) {
-    this._sendTransport = this._mediasoupDevice.createSendTransport(transportParams)
-    this._sendTransport.on('connect', async ({ dtlsParameters }, callback) => {
+  async initSendTransport(socket) {
+    const transportParams = await socketPromise(socket, 'createWebRtcTransport', {
+      producer: this._producer,
+      consumer: this._consumer
+    })
+    const transport = this._mediasoupDevice.createSendTransport(transportParams)
+    transport.on('connect', async ({ dtlsParameters }, callback) => {
       try {
         await socketPromise(socket, 'connectTransport', {
-          transportId: this._sendTransport.id,
+          transportId: transport.id,
           dtlsParameters
         })
         callback()
@@ -171,19 +171,20 @@ export default class Room extends EventEmitter {
         callback(error)
       }
     })
-    this._sendTransport.on('produce', async ({ kind, rtpParameters }, callback, errback) => {
+    transport.on('produce', async ({ kind, rtpParameters, appData }, callback, errback) => {
       try {
         const { id } = await socketPromise(socket, 'produce', {
-          transportId: this._sendTransport.id,
+          transportId: transport.id,
           kind,
-          rtpParameters
+          rtpParameters,
+          appData
         })
         callback({ id })
       } catch (error) {
         errback(error)
       }
     })
-    this._sendTransport.on('connectionstatechange', (state) => {
+    transport.on('connectionstatechange', (state) => {
       switch (state) {
         case 'connecting':
           console.log('send transport connecting')
@@ -193,12 +194,13 @@ export default class Room extends EventEmitter {
           break
         case 'failed':
           console.log('send transport failed')
-          this._sendTransport.close()
+          transport.close()
           break
         default:
           break
       }
     })
+    return transport
   }
 
   initRecvTransport(socket, transportParams) {
@@ -264,7 +266,7 @@ export default class Room extends EventEmitter {
     }
     let track
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true })
       track = stream.getAudioTracks()[0]
       const params = {
         track,
@@ -273,10 +275,11 @@ export default class Room extends EventEmitter {
           opusDtx: 1
         },
         appData: {
-          roomId: this._roomId
+          audio: true,
+          userId: this._userId
         }
       }
-      const audioProducer = await this._sendTransport.produce(params)
+      const audioProducer = await this._sendAudioTransport.produce(params)
       audioProducer.on('transportclose', () => {
         this._audioProducer = null
         console.log('audio producer transport close')
@@ -337,10 +340,11 @@ export default class Room extends EventEmitter {
           videoGoogleStartBitrate: 1000
         },
         appData: {
-          roomId: this._roomId
+          video: true,
+          userId: this._userId
         }
       }
-      const videoProducer = await this._sendTransport.produce(params)
+      const videoProducer = await this._sendVideoTransport.produce(params)
       videoProducer.on('transportclose', () => {
         this._videoProducer = null
         console.log('video producer transport close')
@@ -400,8 +404,8 @@ export default class Room extends EventEmitter {
           displaySurface: 'monitor',
           logicalSurface: true,
           cursor: true,
-          width: { max: 1920 },
-          height: { max: 1080 },
+          width: 640,
+          height: 480,
           frameRate: { max: 30 }
         }
       })
@@ -416,9 +420,9 @@ export default class Room extends EventEmitter {
         codecOptions: {
           videoGoogleStartBitrate: 1000
         },
-        appData: { share: true, roomId: this._roomId }
+        appData: { share: true, userId: this._userId }
       }
-      const screenProducer = await this._sendTransport.produce(params)
+      const screenProducer = await this._sendScreenTransport.produce(params)
       screenProducer.on('transportclose', () => {
         this._screenProducer = null
         console.log('screen producer transport close')
