@@ -1,7 +1,7 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-30 15:09:44
- * @LastEditTime: 2023-04-30 15:46:39
+ * @LastEditTime: 2023-04-30 19:08:15
  * @LastEditors: Libra
  * @Description: 
 -->
@@ -30,8 +30,8 @@ import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const form = reactive({
-  roomId: '',
-  userName: '',
+  roomId: '123',
+  userName: 'libra',
   userRole: '',
 })
 

@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-29 19:15:12
- * @LastEditTime: 2023-04-30 15:56:40
+ * @LastEditTime: 2023-04-30 18:59:33
  * @LastEditors: Libra
  * @Description: room client
  */
@@ -34,6 +34,18 @@ export default class Room extends EventEmitter {
   close(reason) {
     if (this._socket && this._socket.connected) {
       this._socket.close()
+    }
+    if (this._sendVideoTransport) {
+      this._sendVideoTransport.close()
+    }
+    if (this._sendScreenTransport) {
+      this._sendScreenTransport.close()
+    }
+    if (this._sendAudioTransport) {
+      this._sendAudioTransport.close()
+    }
+    if (this._recvTransport) {
+      this._recvTransport.close()
     }
     this.emit('close', reason)
   }
@@ -245,6 +257,15 @@ export default class Room extends EventEmitter {
     }
     if (screen) {
       this.produceScreen()
+    }
+  }
+
+  async produceVideoAndAudio({ audio = true }) {
+    if (audio) {
+      await this.produceVideo()
+      await this.produceAudio()
+    } else {
+      await this.produceVideo()
     }
   }
 
@@ -464,6 +485,30 @@ export default class Room extends EventEmitter {
       })
     } catch (error) {
       console.error('unmute mic error: ', error)
+    }
+  }
+  async muteVideo() {
+    console.log('mute video')
+    if (!this._videoProducer) return
+    this._videoProducer.pause()
+    try {
+      await socketPromise(this._socket, 'pauseProducer', {
+        producerId: this._videoProducer.id
+      })
+    } catch (error) {
+      console.error('mute video error: ', error)
+    }
+  }
+
+  async unmuteVideo() {
+    if (!this._videoProducer) return
+    this._videoProducer.resume()
+    try {
+      await socketPromise(this._socket, 'resumeProducer', {
+        producerId: this._videoProducer.id
+      })
+    } catch (error) {
+      console.error('unmute video error: ', error)
     }
   }
 }
