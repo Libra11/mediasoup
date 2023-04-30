@@ -1,42 +1,42 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-29 21:25:07
- * @LastEditTime: 2023-04-30 10:36:45
+ * @LastEditTime: 2023-04-30 15:42:19
  * @LastEditors: Libra
  * @Description: 
 -->
 <template>
   <div>
-ddd
+    <button @click="shareCamera">分享摄像头</button>
+    <button @click="shareScreen">分享屏幕</button>
   </div>
 </template>
 
 <script setup>
 import { onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import RoomClient from '../lib/room'
 
+let client
+const route = useRoute()
 onMounted(async()=>{
-  const client = new RoomClient({
-    roomId: '123',
-    userName: 'libra',
+  const {roomId, userName} = route.query
+  client = new RoomClient({
+    roomId,
+    userName,
     producer: true,
     consumer: false,
-    video: true,
-    audio: true,
-    screen: true,
   })
   client.joinRoom('https://localhost:5000', '/libra')
-  const client2 = new RoomClient({
-    roomId: '123',
-    userName: 'libra3',
-    producer: true,
-    consumer: false,
-    video: true,
-    audio: false,
-    screen: false,
-  })
-  client2.joinRoom('https://localhost:5000', '/libra')
 })
+
+async function shareCamera() {
+  await client.produce(true, true, false)
+}
+
+async function shareScreen() {
+  await client.produce(false, false, true)
+}
 </script>
 
 <style lang="scss" scoped>

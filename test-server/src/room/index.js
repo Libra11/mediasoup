@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-28 12:53:16
- * @LastEditTime: 2023-04-30 09:58:01
+ * @LastEditTime: 2023-04-30 15:07:42
  * @LastEditors: Libra
  * @Description: room class
  */
@@ -278,9 +278,7 @@ class Room extends EventEmitter {
       console.error("consume error", error);
       return;
     }
-    // save consumer
     this._AppData.get(socket.id).consumers.set(consumer.id, consumer);
-    // new consumer
     try {
       await socketPromise(socket, "newConsumer", {
         id: consumer.id,

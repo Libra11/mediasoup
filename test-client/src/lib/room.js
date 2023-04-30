@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-29 19:15:12
- * @LastEditTime: 2023-04-30 10:38:10
+ * @LastEditTime: 2023-04-30 15:56:40
  * @LastEditors: Libra
  * @Description: room client
  */
@@ -11,24 +11,13 @@ import * as mediaSoupClient from 'mediasoup-client'
 import { socketPromise } from './util'
 
 export default class Room extends EventEmitter {
-  constructor({
-    roomId,
-    userName,
-    producer,
-    consumer,
-    video = false,
-    audio = false,
-    screen = false
-  }) {
+  constructor({ roomId, userName, producer, consumer }) {
     super()
     this._roomId = roomId
     this._userName = userName
     this._userId = this._roomId + '-' + this._userName
     this._socket = null
     this._device = null
-    this._video = video
-    this._audio = audio
-    this._screen = screen
     this._producer = producer
     this._consumer = consumer
     this._consumers = new Map()
@@ -59,8 +48,7 @@ export default class Room extends EventEmitter {
     })
     socket.on('connect', async () => {
       await this.initRoom(socket)
-      await this.produce(this._video, this._audio, this._screen)
-      await this.join()
+      this.emit('connect')
     })
     socket.on('disconnect', (reason) => {
       console.log('socket disconnect:', reason)
@@ -111,6 +99,7 @@ export default class Room extends EventEmitter {
     })
 
     socket.on('newConsumer', async (data, callback) => {
+      console.log('new consumer')
       try {
         const { producerId, id, kind, rtpParameters, appData } = data
         const consumer = await this._recvTransport.consume({
@@ -280,6 +269,7 @@ export default class Room extends EventEmitter {
         }
       }
       const audioProducer = await this._sendAudioTransport.produce(params)
+      this.emit('audioProducer', audioProducer)
       audioProducer.on('transportclose', () => {
         this._audioProducer = null
         console.log('audio producer transport close')
@@ -345,6 +335,7 @@ export default class Room extends EventEmitter {
         }
       }
       const videoProducer = await this._sendVideoTransport.produce(params)
+      this.emit('videoProducer', videoProducer)
       videoProducer.on('transportclose', () => {
         this._videoProducer = null
         console.log('video producer transport close')
@@ -423,6 +414,7 @@ export default class Room extends EventEmitter {
         appData: { share: true, userId: this._userId }
       }
       const screenProducer = await this._sendScreenTransport.produce(params)
+      this.emit('screenProducer', screenProducer)
       screenProducer.on('transportclose', () => {
         this._screenProducer = null
         console.log('screen producer transport close')
