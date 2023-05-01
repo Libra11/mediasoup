@@ -1,7 +1,7 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-30 15:11:02
- * @LastEditTime: 2023-05-01 17:44:32
+ * @LastEditTime: 2023-05-01 23:28:29
  * @LastEditors: Libra
  * @Description: 
 -->
@@ -34,16 +34,16 @@ const route = useRoute()
 let isMute = ref(false)
 let isVideoMute = ref(false)
 let isScreenShare = ref(false)
+const {roomId, userName} = route.query
 onMounted(async()=>{
-  const {roomId, userName} = route.query
   client = new RoomClient({
     roomId,
     userName,
     producer: true,
     consumer: true,
   })
-  // client.joinRoom('https://localhost:5000', '/libra')
-  client.joinRoom('https://104.225.148.105:5000', '/libra')
+  client.joinRoom('https://localhost:5000', '/libra')
+  // client.joinRoom('https://104.225.148.105:5000', '/libra')
   client.on('connect', async () => {
     await client.produceVideoAndAudio({audio: true})
     await client.join()
@@ -80,12 +80,14 @@ function handleVideo(consumer) {
       if (audioEl) {
         const stream = new MediaStream([consumer.track])
         audioEl.srcObject = stream
+        audioEl.autoplay = true
+        audioEl.muted = false
       } else {
         const stream = new MediaStream([consumer.track])
         const audio = document.createElement('audio')
         audio.id = `audio${consumer.appData.userId}${suffix}`
         audio.autoplay = true
-        audio.muted = true
+        audio.muted = false
         audio.srcObject = stream
         videoContainer.appendChild(audio)
       }
@@ -121,6 +123,9 @@ function handleVideoProducer(producer) {
   videoEl.srcObject = stream;
 }
 function handleAudioProducer(producer) {
+  if (producer.appData.userId === `${roomId}-${userName}`) {
+    return
+  }
   const audioEl = audioRef.value;
   const stream = new MediaStream;
   stream.addTrack(producer.track);
