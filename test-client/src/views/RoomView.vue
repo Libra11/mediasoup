@@ -1,7 +1,7 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-30 15:11:02
- * @LastEditTime: 2023-05-02 14:45:08
+ * @LastEditTime: 2023-05-02 14:47:22
  * @LastEditors: Libra
  * @Description: 
 -->
@@ -55,8 +55,8 @@ onMounted(async()=>{
     producer: true,
     consumer: true,
   })
-  client.joinRoom('https://localhost:5000', '/libra')
-  // client.joinRoom('https://104.225.148.105:5000', '/libra')
+  // client.joinRoom('https://localhost:5000', '/libra')
+  client.joinRoom('https://104.225.148.105:5000', '/libra')
   client.on('connect', async () => {
     await client.produceVideoAndAudio({audio: true})
     await client.join()
