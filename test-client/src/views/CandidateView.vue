@@ -1,7 +1,7 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-29 21:25:07
- * @LastEditTime: 2023-04-30 15:42:19
+ * @LastEditTime: 2023-05-02 11:17:09
  * @LastEditors: Libra
  * @Description: 
 -->
@@ -27,7 +27,8 @@ onMounted(async()=>{
     producer: true,
     consumer: false,
   })
-  client.joinRoom('https://localhost:5000', '/libra')
+  // client.joinRoom('https://localhost:5000', '/libra')
+  client.joinRoom('https://104.225.148.105:5000', '/libra')
 })
 
 async function shareCamera() {
