@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-29 19:15:12
- * @LastEditTime: 2023-04-30 18:59:33
+ * @LastEditTime: 2023-05-02 11:04:43
  * @LastEditors: Libra
  * @Description: room client
  */
@@ -132,6 +132,10 @@ export default class Room extends EventEmitter {
         callback({ error: error.message })
       }
     })
+
+    socket.on('message', (data) => {
+      this.emit('message', data)
+    })
   }
 
   async initRoom(socket) {
@@ -244,6 +248,14 @@ export default class Room extends EventEmitter {
       })
     } catch (error) {
       console.error('join error', error)
+    }
+  }
+
+  async sendMessage(messages) {
+    try {
+      await socketPromise(this._socket, 'message', messages)
+    } catch (error) {
+      console.error('sendMessages error', error)
     }
   }
 

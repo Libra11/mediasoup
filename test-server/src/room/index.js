@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-28 12:53:16
- * @LastEditTime: 2023-04-30 15:07:42
+ * @LastEditTime: 2023-05-02 10:51:40
  * @LastEditors: Libra
  * @Description: room class
  */
@@ -200,6 +200,15 @@ class Room extends EventEmitter {
         console.error("resumeProducer error", error);
         callback({ error: error.message });
       }
+    });
+
+    socket.on("message", (message) => {
+      // send broadcast message
+      this._sockets.forEach((s) => {
+        if (s.id !== socket.id) {
+          s.emit("message", message);
+        }
+      });
     });
   }
 

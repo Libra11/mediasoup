@@ -1,7 +1,7 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-30 15:11:02
- * @LastEditTime: 2023-05-01 23:28:29
+ * @LastEditTime: 2023-05-02 11:06:17
  * @LastEditors: Libra
  * @Description: 
 -->
@@ -19,7 +19,12 @@
     </div>
     <audio ref="audioRef" autoplay></audio>
     <div class="video-container">
-  </div>
+    </div>
+    <div>
+      <span>发送消息</span>
+      <el-input v-model="message" placeholder="请输入内容" />
+      <el-button type="primary" @click="sendMessage">发送</el-button>
+    </div>
   </div>
 </template>
 
@@ -28,6 +33,7 @@ import { onMounted, ref, onBeforeUnmount } from 'vue';
 import { Microphone, Mute, VideoCamera, Platform } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router';
 import RoomClient from '../lib/room'
+import { ElMessage } from 'element-plus'
 
 let client
 const route = useRoute()
@@ -63,6 +69,13 @@ onMounted(async()=>{
   client.on('screenProducer', (producer) => {
     console.log('screenProducer', producer)
     handleVideoProducer(producer)
+  })
+
+  client.on('message', (message) => { 
+    ElMessage({
+      message: message,
+      type: 'success'
+    })
   })
 })
 
@@ -163,6 +176,15 @@ async function switchScreenCamera() {
     isScreenShare.value = true
   }
 }
+
+const message = ref('')
+async function sendMessage() {
+  if (message.value) {
+    await client.sendMessage(message.value)
+    console.log('dddd')
+    message.value = ''
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -195,7 +217,5 @@ async function switchScreenCamera() {
 .video-container {
   display: flex;
   flex-wrap: wrap;
-  height: 100vh;
-  width: 100vw;
 }
 </style>
