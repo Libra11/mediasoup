@@ -1,17 +1,20 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-30 15:09:44
- * @LastEditTime: 2023-04-30 19:08:15
+ * @LastEditTime: 2023-05-02 13:53:38
  * @LastEditors: Libra
  * @Description: 
 -->
 <template>
-  <el-form  :model="form" class="demo-form-inline">
-    <el-form-item label="RoomId">
-      <el-input v-model="form.roomId" placeholder="RoomId" />
+  <div class="login-container">
+    <el-card class="login">
+      <div class="title">进入房间</div>
+    <el-form  :model="form" class="demo-form-inline">
+    <el-form-item>
+      <el-input size="large" v-model="form.roomId" placeholder="房间号" />
     </el-form-item>
-    <el-form-item label="用户名">
-      <el-input v-model="form.userName" placeholder="用户名" />
+    <el-form-item>
+      <el-input size="large" v-model="form.userName" placeholder="用户名" />
     </el-form-item>
     <el-form-item v-if="mode==='invigilator'">
       <el-radio-group v-model="form.userRole">
@@ -20,9 +23,11 @@
       </el-radio-group>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="login">登录</el-button>
+      <el-button size="large" type="primary" @click="login">登录</el-button>
     </el-form-item>
   </el-form>
+  </el-card>
+  </div>
 </template>
 
 <script setup>
@@ -30,8 +35,8 @@ import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const form = reactive({
-  roomId: '123',
-  userName: 'libra',
+  roomId: '',
+  userName: '',
   userRole: '',
 })
 
@@ -52,5 +57,43 @@ const login = () => {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+:deep(.el-card__body) {
+  width: 300px;
+}
+:deep(.el-form) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  .el-form-item {
+    width: 100%;
+    .el-button {
+      width: 100%;
+    }
+  }
+}
+  .login-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .login {
+      width: 300px;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+    }
+  }
+</style>
 
 
