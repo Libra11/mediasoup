@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-29 19:15:12
- * @LastEditTime: 2023-05-02 11:04:43
+ * @LastEditTime: 2023-05-04 11:42:19
  * @LastEditors: Libra
  * @Description: room client
  */
@@ -111,7 +111,6 @@ export default class Room extends EventEmitter {
     })
 
     socket.on('newConsumer', async (data, callback) => {
-      console.log('new consumer')
       try {
         const { producerId, id, kind, rtpParameters, appData } = data
         const consumer = await this._recvTransport.consume({

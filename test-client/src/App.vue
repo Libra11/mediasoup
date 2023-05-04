@@ -1,7 +1,7 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-26 18:50:03
- * @LastEditTime: 2023-04-30 18:00:18
+ * @LastEditTime: 2023-05-04 11:17:24
  * @LastEditors: Libra
  * @Description: 
 -->
@@ -13,8 +13,13 @@ import { RouterView } from 'vue-router'
   <RouterView />
 </template>
 
-<style scoped>
+<style>
 body {
   background-color: #fff;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 </style>
