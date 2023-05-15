@@ -1,7 +1,7 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-29 21:25:07
- * @LastEditTime: 2023-05-04 11:50:33
+ * @LastEditTime: 2023-05-04 13:20:50
  * @LastEditors: Libra
  * @Description: 
 -->
@@ -36,10 +36,10 @@ onMounted(async()=>{
     producer: true,
     consumer: false,
   })
-  // client.joinRoom('https://localhost:5000', '/libra')
-  client.joinRoom('https://104.225.148.105:5000', '/libra')
+  client.joinRoom('https://localhost:5000', '/libra')
+  // client.joinRoom('https://104.225.148.105:5000', '/libra')
   client.on('connect', async () => {
-    await client.produceVideoAndAudio({audio:true})
+    await client.produceVideoAndAudio()
     client.join()
   })
   client.on('audioProducer', (producer) => {
@@ -96,8 +96,8 @@ align-items: center;
   .content {
     flex: 1;
     display: flex;
-justify-content: center;
-align-items: center;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     .left {
       flex: 1;

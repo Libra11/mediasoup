@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-29 19:15:12
- * @LastEditTime: 2023-05-04 11:42:19
+ * @LastEditTime: 2023-05-12 11:19:51
  * @LastEditors: Libra
  * @Description: room client
  */
@@ -271,13 +271,9 @@ export default class Room extends EventEmitter {
     }
   }
 
-  async produceVideoAndAudio({ audio = true }) {
-    if (audio) {
-      await this.produceVideo()
-      await this.produceAudio()
-    } else {
-      await this.produceVideo()
-    }
+  async produceVideoAndAudio() {
+    await this.produceVideo()
+    await this.produceAudio()
   }
 
   async produceAudio() {

@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-26 18:50:03
- * @LastEditTime: 2023-04-30 21:43:58
+ * @LastEditTime: 2023-05-12 14:33:46
  * @LastEditors: Libra
  * @Description:
  */
@@ -13,6 +13,7 @@ import fs from 'fs'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: process.env.ELECTRON ? './' : '/',
   plugins: [vue()],
   server: {
     https: {

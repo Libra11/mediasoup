@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-28 10:48:48
- * @LastEditTime: 2023-04-28 14:35:36
+ * @LastEditTime: 2023-05-12 10:28:58
  * @LastEditors: Libra
  * @Description: mediasoup config
  */
@@ -46,44 +46,29 @@ module.exports = {
       {
         kind: "audio",
         mimeType: "audio/opus",
+        preferredPayloadType: 111,
         clockRate: 48000,
         channels: 2,
+        parameters: {
+          minptime: 10,
+          useinbandfec: 1,
+        },
       },
       {
         kind: "video",
         mimeType: "video/VP8",
+        preferredPayloadType: 96,
         clockRate: 90000,
-        parameters: { "x-google-start-bitrate": 1000 },
       },
       {
         kind: "video",
-        mimeType: "video/VP9",
+        mimeType: "video/H264",
+        preferredPayloadType: 125,
         clockRate: 90000,
         parameters: {
-          "profile-id": 2,
-          "x-google-start-bitrate": 1000,
-        },
-      },
-      {
-        kind: "video",
-        mimeType: "video/h264",
-        clockRate: 90000,
-        parameters: {
-          "packetization-mode": 1,
-          "profile-level-id": "4d0032",
           "level-asymmetry-allowed": 1,
-          "x-google-start-bitrate": 1000,
-        },
-      },
-      {
-        kind: "video",
-        mimeType: "video/h264",
-        clockRate: 90000,
-        parameters: {
           "packetization-mode": 1,
           "profile-level-id": "42e01f",
-          "level-asymmetry-allowed": 1,
-          "x-google-start-bitrate": 1000,
         },
       },
     ],
@@ -99,8 +84,11 @@ module.exports = {
         announcedIp: getIPAddress(),
       },
     ],
+    enableUdp: true,
+    enableTcp: true,
+    preferUdp: true,
     // default output bit rate (bps)
-    initialAvailableOutgoingBitrate: 1000000,
+    initialAvailableOutgoingBitrate: 300000,
     // max incoming bitrate (bps) for remote peers
     maxIncomingBitrate: 1500000,
   },

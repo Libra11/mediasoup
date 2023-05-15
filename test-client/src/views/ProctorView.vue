@@ -1,7 +1,7 @@
 <!--
  * @Author: Libra
  * @Date: 2023-04-29 21:25:56
- * @LastEditTime: 2023-05-04 11:50:27
+ * @LastEditTime: 2023-05-04 13:13:18
  * @LastEditors: Libra
  * @Description: 
 -->
@@ -24,8 +24,8 @@ onMounted(async()=>{
     producer: false,
     consumer: true,
   })
-  // await client.joinRoom('https://localhost:5000', '/libra')
-  client.joinRoom('https://104.225.148.105:5000', '/libra')
+  await client.joinRoom('https://localhost:5000', '/libra')
+  // client.joinRoom('https://104.225.148.105:5000', '/libra')
   client.on('connect', () => {
     client.join()
   })

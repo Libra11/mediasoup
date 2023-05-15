@@ -1,7 +1,7 @@
 /*
  * @Author: Libra
  * @Date: 2023-04-28 12:53:16
- * @LastEditTime: 2023-05-04 11:39:12
+ * @LastEditTime: 2023-05-12 11:18:38
  * @LastEditors: Libra
  * @Description: room class
  */
@@ -10,8 +10,8 @@ const {
   routerOptions,
   webRtcTransportOptions,
 } = require("../config/mediasoup");
-const { socketPromise } = require("../util");
-
+const { socketPromise, getIPAddress } = require("../util");
+// const { record } = require("../record");
 class Room extends EventEmitter {
   constructor(roomId, mediasoupRouter) {
     super();
@@ -127,6 +127,8 @@ class Room extends EventEmitter {
           this._AppData.get(socket.id).producers.delete(producer.id);
         });
         callback({ id: producer.id });
+        // record
+        // record(producer, this._mediasoupRouter);
         for (const client of this._sockets.filter((s) => s.id !== socket.id)) {
           this.createConsumer(client, producer);
         }
@@ -247,7 +249,9 @@ class Room extends EventEmitter {
 
   // createConsumer
   async createConsumer(socket, producer) {
-    const { rtpCapabilities, transports } = this._AppData.get(socket.id);
+    const { rtpCapabilities, transports, recordTransports } = this._AppData.get(
+      socket.id
+    );
     if (
       !rtpCapabilities ||
       !this._mediasoupRouter.canConsume({
@@ -271,6 +275,7 @@ class Room extends EventEmitter {
         paused: true,
       });
       consumer.on("transportclose", () => {
+        ffmpeg.stdin.end();
         this._AppData.get(socket.id).consumers.delete(consumer.id);
       });
       consumer.on("producerclose", () => {
